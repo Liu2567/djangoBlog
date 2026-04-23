@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册 - 我的博客</title>
+    <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap.min.css' %}">
+    <style>
+        body {
+            background-color: #f5f5f5;
+        }
+        .register-container {
+            max-width: 450px;
+            margin: 80px auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container register-container">
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h3 class="text-center mb-0">注册</h3>
+        </div>
+        <div class="card-body p-4">
+            <form method="POST">
+                {# 用户名 #}
+                <div class="mb-3">
+                    <label for="username" class="form-label">用户名</label>
+                    <input type="text" class="form-control" id="username" name="username" 
+                           placeholder="请输入用户名" required>
+                </div>
+                
+                {# 密码 #}
+                <div class="mb-3">
+                    <label for="password" class="form-label">密码</label>
+                    <input type="password" class="form-control" id="password" name="password" 
+                           placeholder="请输入密码" required>
+                </div>
+                
+                {# 确认密码 #}
+                <div class="mb-3">
+                    <label for="password-confirm" class="form-label">确认密码</label>
+                    <input type="password" class="form-control" id="password-confirm" name="password_confirm" 
+                           placeholder="请再次输入密码" required>
+                </div>
+                
+                {# 注册按钮 #}
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary">注册</button>
+                </div>
+                
+                {# 登录链接 #}
+                <div class="text-center mb-3">
+                    <span>已有账号？</span>
+                    <a href="{% url 'blogAuth:login' %}" class="text-decoration-none">登录</a>
+                </div>
+                
+                {# 返回首页 #}
+                <div class="text-center">
+                    <a href="{% url 'blog:index' %}" class="btn btn-link text-decoration-none">返回首页</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'bootstrap5/bootstrap.min.js' %}"></script>
+<script>
+    {# 前端密码确认验证 #}
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('password-confirm').value;
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('两次输入的密码不一致！');
+        }
+    });
+</script>
+</body>
+</html>
