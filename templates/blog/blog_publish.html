@@ -1,12 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>我的博客</title>
-    <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap.min.css' %}">
-    <script src="{% static 'bootstrap5/bootstrap.min.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'css/base.css' %}">
-    {# 引入wangeditor V5文本编辑器 #}
+{% extends 'blog/base.html' %}
+
+{% block title %}
+	发布博客
+{% endblock title%}
+
+{% block head %}
+	{# 引入wangeditor V5文本编辑器 #}
     <link href="https://unpkg.com/@wangeditor/editor@latest/dist/css/style.css" rel="stylesheet">
     <script src="https://unpkg.com/@wangeditor/editor@latest/dist/index.js"></script>
     <style>
@@ -18,48 +17,9 @@
             border-bottom: 1px solid #ccc;
         }
     </style>
-</head>
-<body>
-{#导航栏#}
-<nav class="navbar navbar-expand-lg mb-3" style="background-color: #eaf1f6;" data-bs-theme="light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">我的博客</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor03"
-                aria-controls="navbarColor03" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarColor03">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">首页</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">发布博客</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">我的发布</a>
-                </li>
-            </ul>
+{% endblock head%}
 
-            <form class="d-flex me-3" role="search">
-                <input class="form-control" type="search" placeholder="请输入" aria-label="Search"
-                       style="width: 200px; border-top-right-radius: 0; border-bottom-right-radius: 0;"/>
-                <button class="btn btn-outline-primary" type="submit"
-                        style="border-top-left-radius: 0; border-bottom-left-radius: 0;">搜索
-                </button>
-            </form>
-            <div class="text-end">
-                <button type="button" class="btn btn-outline-primary me-2">登录</button>
-                <button type="button" class="btn btn-primary">注册</button>
-            </div>
-
-
-        </div>
-    </div>
-</nav>
-
-{#主体部分#}
-<div class="container" style="max-width: 1200px;">
+{% block content %}
     <div class="card shadow-sm">
         <div class="card-body p-4">
             <h2 class="mb-4">发布博客</h2>
@@ -103,9 +63,10 @@
             </form>
         </div>
     </div>
-</div>
+{% endblock content%}
 
-<script>
+{% block script %}
+	<script>
     const { createEditor, createToolbar } = window.wangEditor
 
     const editorConfig = {
@@ -133,5 +94,4 @@
         mode: 'default',
     })
 </script>
-</body>
-</html>
+{% endblock script%}
