@@ -24,24 +24,24 @@
         </div>
         <div class="card-body p-4">
             <form method="POST">
+                {% csrf_token %}
+
                 {# 用户名 #}
                 <div class="mb-3">
-                    <label for="username" class="form-label">用户名</label>
-                    <input type="text" class="form-control" id="username" name="username"
-                           placeholder="请输入用户名" required>
+                    <label for="{{ form.username.id_for_label }}" class="form-label">{{ form.username.label }}</label>
+                    {{ form.username }}
                 </div>
 
                 {# 密码 #}
                 <div class="mb-3">
-                    <label for="password" class="form-label">密码</label>
-                    <input type="password" class="form-control" id="password" name="password"
-                           placeholder="请输入密码" required>
+                    <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }}</label>
+                    {{ form.password }}
                 </div>
 
                 {# 记住我 #}
                 <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                    <label class="form-check-label" for="remember">记住我</label>
+                    {{ form.remember }}
+                    <label class="form-check-label" for="remember">{{ form.remember.label }}</label>
                 </div>
 
                 {# 登录按钮 #}

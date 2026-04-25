@@ -2,47 +2,75 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}{% endblock %}</title>
+{#用于控制移动端页面的缩放和显示方式。#}
+{#    <meta name="viewport" content="width=device-width, initial-scale=1.0">#}
+    <title>{% block title %}我的博客{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap.min.css' %}">
-    <script src="{% static 'bootstrap5/bootstrap.min.js' %}"></script>
+    <script src="{% static 'bootstrap5/bootstrap.bundle.min.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     {% block head %}{% endblock %}
 </head>
 <body>
 {#导航栏#}
-<nav class="navbar navbar-expand-lg mb-3" style="background-color: #eaf1f6;" data-bs-theme="light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'blog:index' %}">我的博客</a>
+<nav class="navbar navbar-expand-lg mb-3" style="background-color: #eaf3fe;" data-bs-theme="light">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{% url 'blog:index' %}">我的博客</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor03"
                 aria-controls="navbarColor03" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarColor03">
+            {# 左侧导航 #}
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'blog:index' %}">首页</a>
+                    <a class="nav-link {% if request.path == '/' %}active{% endif %}" aria-current="page" href="{% url 'blog:index' %}">首页</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'blog:blog_publish' %}">发布博客</a>
+                    <a class="nav-link {% if request.path == '/blog/publish' %}active{% endif %}" href="{% url 'blog:blog_publish' %}">发布博客</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">我的发布</a>
                 </li>
             </ul>
 
-            <form class="d-flex me-3" role="search">
-                <input class="form-control" type="search" placeholder="请输入" aria-label="Search"
-                       style="width: 200px; border-top-right-radius: 0; border-bottom-right-radius: 0;"/>
-                <button class="btn btn-outline-primary" type="submit"
-                        style="border-top-left-radius: 0; border-bottom-left-radius: 0;">搜索
-                </button>
-            </form>
-            <div class="text-end">
-                <a href="{% url 'blogAuth:login' %}" class="btn btn-outline-primary me-2">登录</a>
-                <a href="{% url 'blogAuth:register' %}" class="btn btn-primary">注册</a>
+            {# 右侧区域（搜索框 + 用户） #}
+            <div class="d-flex align-items-center">
+                {# 搜索框 #}
+                <form class="d-flex me-3 mb-2 mb-lg-0" role="search">
+                    <input class="form-control" type="search" placeholder="请输入" aria-label="Search"
+                           style="width: 200px; border-top-right-radius: 0; border-bottom-right-radius: 0;"/>
+                    <button class="btn btn-outline-primary" type="submit"
+                            style="border-top-left-radius: 0; border-bottom-left-radius: 0;">搜索
+                    </button>
+                </form>
+
+                {# 用户区域 #}
+                {% if user.is_authenticated %}
+                    <div class="dropdown">
+                        <a href="#"
+                           class="d-flex align-items-center link-body-emphasis text-decoration-none dropdown-toggle"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="{% static 'img/1.png' %}" alt="{{ user.username }}" width="32" height="32" class="rounded-circle me-2">
+                            <span>{{ user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end text-small shadow">
+                            <li><a class="dropdown-item" href="#">个人资料</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form action="{% url 'blogAuth:logout' %}" method="POST" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger">退出登录</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'blogAuth:login' %}" class="btn btn-outline-primary">登录</a>
+                        <a href="{% url 'blogAuth:register' %}" class="btn btn-primary">注册</a>
+                    </div>
+                {% endif %}
             </div>
-
-
         </div>
     </div>
 </nav>
