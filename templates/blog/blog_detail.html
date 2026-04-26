@@ -3,60 +3,69 @@
 {% block title %}{{ blog.title }}{% endblock title %}
 
 {% block content %}
-    <div class="container" style="max-width: 1200px;">
-        <h2>{{ blog.title }}</h2>
-        <hr>
+  <div class="container" style="max-width: 1200px;">
+    <h2>{{ blog.title }}</h2>
+    <hr>
+    <div class="mt-2 d-flex justify-content-between">
+      <div>
+        <img src="{% static 'img/1.png' %}" class="rounded-circle" width="30" height="30" alt="">
+        <span class="ms-2">{{ blog.author.username }}</span>
+        <span class="ms-2">于</span>
+        <span class="ms-2">{{ blog.pub_at|date:'Y-m-d H:i' }}</span>
+        <span class="ms-2">发布</span>
+      </div>
+      {#  判断用户是否登录，并且当前用户是否是作者，是作者显示操作按钮  #}
+      {% if user.is_authenticated and blog.author == user %}
+      <div>
+        <a href="#" class="btn btn-sm btn-outline-primary me-1">编辑</a>
+        <a href="#" class="btn btn-sm btn-outline-danger">删除</a>
+      </div>
+      {% endif %}
+    </div>
+    <hr>
+    <div class="py-2" style="min-height: 100px;">
+      {{ blog.content|safe }}
+    </div>
+    <hr>
+
+    <div class="mt-4">
+      <h3>评论 ({{ comments|length }})</h3>
+
+      {# 评论表单 #}
+      <form action="{% url 'blog:blog_comment' %}" method="POST">
+        {% csrf_token %}
+        {# 隐藏字段传递 blog_id #}
+        <input type="hidden" name="blog_id" value="{{ blog.id }}">
+
         <div class="mt-2">
-            <img src="{% static 'img/1.png' %}" class="rounded-circle" width="30" height="30" alt="">
-            <span class="ms-2">{{ blog.author.username }}</span>
-            <span class="ms-2">于</span>
-            <span class="ms-2">{{ blog.pub_at|date:'Y-m-d H:i' }}</span>
-            <span class="ms-2">发布</span>
-        </div>
-        <hr>
-        <div class="py-2" style="min-height: 100px;">
-            {{ blog.content|safe }}
-        </div>
-        <hr>
-
-        <div class="mt-4">
-            <h3>评论 ({{ comments|length }})</h3>
-
-            {# 评论表单 #}
-            <form action="{% url 'blog:blog_comment' %}" method="POST">
-                {% csrf_token %}
-                {# 隐藏字段传递 blog_id #}
-                <input type="hidden" name="blog_id" value="{{ blog.id }}">
-
-                <div class="mt-2">
                     <textarea name="content" cols="30" rows="2" class="form-control"
                               placeholder="请输入评论内容..." required
                               style="resize: none;"></textarea>
-                </div>
-                <div class="text-end mt-2">
-                    <button type="submit" class="btn btn-primary">发布评论</button>
-                </div>
-            </form>
-
-            {# 评论列表 #}
-            <ul class="list-group list-group-flush mt-4">
-                {% for comment in comments %}
-                    <li class="list-group-item mb-3">
-                        <div class="d-flex justify-content-between text-body-secondary">
-                            <div class="user-info">
-                                <img src="{% static 'img/1.png' %}" class="rounded-circle" width="30" height="30" alt="">
-                                <span class="ms-2">{{ comment.author.username }}</span>
-                            </div>
-                            <div class="create-time">{{ comment.pub_at|date:'Y-m-d H:i' }}</div>
-                        </div>
-                        <div class="mt-2">
-                            {{ comment.content }}
-                        </div>
-                    </li>
-                {% empty %}
-                    <li class="list-group-item text-center text-muted">暂无评论</li>
-                {% endfor %}
-            </ul>
         </div>
+        <div class="text-end mt-2">
+          <button type="submit" class="btn btn-primary">发布评论</button>
+        </div>
+      </form>
+
+      {# 评论列表 #}
+      <ul class="list-group list-group-flush mt-4">
+        {% for comment in comments %}
+          <li class="list-group-item mb-3">
+            <div class="d-flex justify-content-between text-body-secondary">
+              <div class="user-info">
+                <img src="{% static 'img/1.png' %}" class="rounded-circle" width="30" height="30" alt="">
+                <span class="ms-2">{{ comment.author.username }}</span>
+              </div>
+              <div class="create-time">{{ comment.pub_at|date:'Y-m-d H:i' }}</div>
+            </div>
+            <div class="mt-2">
+              {{ comment.content }}
+            </div>
+          </li>
+        {% empty %}
+          <li class="list-group-item text-center text-muted">暂无评论</li>
+        {% endfor %}
+      </ul>
     </div>
+  </div>
 {% endblock content %}
