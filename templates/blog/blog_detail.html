@@ -3,18 +3,18 @@
 {% block title %}博客首页{% endblock title %}
 
 {% block content %}
-        <h2>演示标题</h2>
+        <h2>{{ blog.title }}</h2>
     <hr>
     <div class="mt-2">
         <img src="{% static 'img/1.png' %}" class="rounded-circle" width="30" height="30" alt="">
-        <span class="ms-2">用户名称</span>
+        <span class="ms-2">{{ blog.author.username }}</span>
         <span class="ms-2">于</span>
-        <span class="ms-2">2023-01-01 00:00</span>
+        <span class="ms-2">{{ blog.pub_at|date:'Y-m-d H:i' }}</span>
         <span class="ms-2">发布</span>
     </div>
     <hr>
     <div class="py-2">
-        这是博客详情
+        {{ blog.content|safe }}
     </div>
     <hr>
     <div class="mt-2">

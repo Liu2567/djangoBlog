@@ -20,47 +20,41 @@
 {% endblock head%}
 
 {% block content %}
-    <div class="card shadow-sm">
-        <div class="card-body p-4">
-            <h2 class="mb-4">发布博客</h2>
+    <div class="container" style="max-width: 1200px;">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="mb-4">发布博客</h2>
 
-            <form action="" method="POST" id="blog-form">
-                {# 标题输入 #}
-                <div class="mb-3">
-                    <label for="blog-title" class="form-label fw-bold">标题</label>
-                    <input type="text" class="form-control" id="blog-title" name="title" placeholder="请输入标题">
-                </div>
-{##}
-                {# 分类选择 #}
-{#                <div class="mb-3">#}
-{#                    <label for="blog-category" class="form-label fw-bold">分类</label>#}
-{#                    <select class="form-select" id="blog-category" name="category">#}
-{#                        <option selected>Python</option>#}
-{#                        <option value="1">Java</option>#}
-{#                        <option value="2">JavaScript</option>#}
-{#                        <option value="3">前端</option>#}
-{#                        <option value="4">数据库</option>#}
-{#                        <option value="5">其他</option>#}
-{#                    </select>#}
-{#                </div>#}
+                <form action="" method="POST" id="blog-form">
+                    {% csrf_token %}
 
-                {# 内容编辑器 #}
-                <div class="mb-3">
-                    <label class="form-label fw-bold">内容</label>
-                    <div id="editor-wrapper">
-                        <div id="toolbar-container"></div>
-                        <div id="editor-container" style="height: 400px;"></div>
+                    {# 标题输入 (使用 ModelForm 渲染) #}
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">标题</label>
+                        {{ form.title }}
+                        
                     </div>
-                </div>
 
-                {# 隐藏字段，用于提交编辑器内容 #}
-                <input type="hidden" name="content" id="content">
+                    {# 内容编辑器 #}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">内容</label>
 
-                {# 提交按钮 #}
-                <div class="text-end mt-4">
-                    <button type="submit" class="btn btn-primary">提交</button>
-                </div>
-            </form>
+                        {# ModelForm 生成的 textarea，默认 id 为 id_content #}
+                        {{ form.content }}
+
+                        {# wangeditor 容器 #}
+                        <div id="editor-wrapper">
+                            <div id="toolbar-container"></div>
+                            <div id="editor-container" style="height: 400px;"></div>
+                        </div>
+                    </div>
+
+                    {# 提交按钮 #}
+                    <div class="text-end mt-4">
+                        <button type="submit" class="btn btn-primary">提交</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 {% endblock content%}
@@ -70,11 +64,13 @@
     const { createEditor, createToolbar } = window.wangEditor
 
     const editorConfig = {
-        placeholder: 'Type here...',
+        placeholder: '请输入内容...',
         onChange(editor) {
             const html = editor.getHtml()
             console.log('editor content', html)
-            document.getElementById('content').value = html
+            // 将编辑器内容同步到 ModelForm 的 content 字段
+            // ModelForm 默认生成的 textarea id 为 id_content
+            document.getElementById('id_content').value = html
         }
     }
 
