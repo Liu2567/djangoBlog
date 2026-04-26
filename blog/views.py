@@ -8,7 +8,8 @@ from blog.models import Blog, BlogComment
 # Create your views here.
 # 首页
 def index(request):
-    return render(request, 'blog/index.html')
+    blogs = Blog.objects.all()
+    return render(request, 'blog/index.html', {'blogs': blogs})
 
 
 # 详情页
