@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from blog.forms import PubBlogForm
-from blog.models import Blog
+from blog.models import Blog, BlogComment
 
 
 # Create your views here.
@@ -14,7 +14,8 @@ def index(request):
 # 详情页
 def blog_detail(request, blog_id):
     blog = Blog.objects.get(id=blog_id)
-    return render(request, 'blog/blog_detail.html', {'blog': blog})
+    comments = BlogComment.objects.filter(blog=blog)
+    return render(request, 'blog/blog_detail.html', {'blog': blog, 'comments': comments})
 
 
 # 发布页面（需要登录）
@@ -39,3 +40,15 @@ def blog_publish(request):
             return redirect('blog:blog_detail', blog_id=blog.id)
         else:
             return render(request, 'blog/blog_publish.html', {'form': form})
+
+
+# 评论
+@require_POST
+@login_required(login_url='blogAuth:login')
+def blog_comment(request):
+    blog_id = request.POST.get('blog_id')
+    content = request.POST.get('content')
+    BlogComment.objects.create(content=content, blog_id=blog_id, author=request.user)
+
+    # 发布后重新加载详情页
+    return redirect('blog:blog_detail', blog_id=blog_id)

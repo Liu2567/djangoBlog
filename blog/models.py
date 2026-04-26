@@ -24,3 +24,4 @@ class BlogComment(models.Model):
     class Meta:
         verbose_name = '博客评论'
         verbose_name_plural = verbose_name
+        ordering = ['-pub_at']
