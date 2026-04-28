@@ -86,7 +86,29 @@ def search(request):
     })
 
 
+# 我的发布
 @login_required(login_url='blogAuth:login')
 def my_publish(request):
     blogs = Blog.objects.filter(author=request.user).all()
     return render(request, 'blog/my_publish.html', {'blogs': blogs})
+
+
+# 编辑
+@require_http_methods(['GET', 'POST'])
+@login_required(login_url='blogAuth:login')
+def blog_edit(request, blog_id):
+    blog = Blog.objects.get(id=blog_id)
+    # 验证是否是作者本人
+    if blog.author != request.user:
+        return redirect('blog:blog_detail', blog_id=blog_id)
+    
+    if request.method == 'GET':
+        form = PubBlogForm(instance=blog)
+        return render(request, 'blog/blog_publish.html', {'form': form, 'is_editing': True})
+    else:
+        form = PubBlogForm(request.POST, instance=blog)
+        if form.is_valid():
+            form.save()      # 保存
+            return redirect('blog:blog_detail', blog_id=blog_id)
+        else:
+            return render(request, 'blog/blog_publish.html', {'form': form, 'is_editing': True})

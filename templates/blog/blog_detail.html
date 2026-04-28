@@ -17,7 +17,7 @@
       {#  判断用户是否登录，并且当前用户是否是作者，是作者显示操作按钮  #}
       {% if user.is_authenticated and blog.author == user %}
       <div>
-        <a href="#" class="btn btn-sm btn-outline-primary me-1">编辑</a>
+        <a href="{% url 'blog:blog_edit' blog_id=blog.id %}" class="btn btn-sm btn-outline-primary me-1">编辑</a>
         <a href="#" class="btn btn-sm btn-outline-danger">删除</a>
       </div>
       {% endif %}

@@ -1,93 +1,96 @@
 {% extends 'blog/base.html' %}
 
 {% block title %}
-	发布博客
-{% endblock title%}
+  发布博客
+{% endblock title %}
 
 {% block head %}
-	{# 引入wangeditor V5文本编辑器 #}
-    <link href="https://unpkg.com/@wangeditor/editor@latest/dist/css/style.css" rel="stylesheet">
-    <script src="https://unpkg.com/@wangeditor/editor@latest/dist/index.js"></script>
-    <style>
-        #editor-wrapper {
-            border: 1px solid #ccc;
-            z-index: 100;
-        }
-        #toolbar-container {
-            border-bottom: 1px solid #ccc;
-        }
-    </style>
-{% endblock head%}
+  {# 引入wangeditor V5文本编辑器 #}
+  <link href="https://unpkg.com/@wangeditor/editor@latest/dist/css/style.css" rel="stylesheet">
+  <script src="https://unpkg.com/@wangeditor/editor@latest/dist/index.js"></script>
+  <style>
+      #editor-wrapper {
+          border: 1px solid #ccc;
+          z-index: 100;
+      }
+
+      #toolbar-container {
+          border-bottom: 1px solid #ccc;
+      }
+  </style>
+{% endblock head %}
 
 {% block content %}
-    <div class="container" style="max-width: 1200px;">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h2 class="mb-4">发布博客</h2>
+  <div class="container" style="max-width: 1200px;">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        {#   判断 blog 是否存在，存在则表示是编辑博客   #}
+        <h2 class="mb-4">{% if is_editing %}编辑博客{% else %}发布博客{% endif %}</h2>
 
-                <form action="" method="POST" id="blog-form">
-                    {% csrf_token %}
+        <form action="{% if is_editing %}{% url 'blog:blog_edit' blog_id=blog.id %}{% else %}{% url 'blog:my_publish' %}{% endif %}" method="POST" id="blog-form">
+          {% csrf_token %}
 
-                    {# 标题输入 (使用 ModelForm 渲染) #}
-                    <div class="mb-3">
-                        <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">标题</label>
-                        {{ form.title }}
-                        
-                    </div>
+          {# 标题输入 (使用 ModelForm 渲染) #}
+          <div class="mb-3">
+            <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">标题</label>
+            {{ form.title }}
 
-                    {# 内容编辑器 #}
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">内容</label>
+          </div>
 
-                        {# ModelForm 生成的 textarea，默认 id 为 id_content #}
-                        {{ form.content }}
+          {# 内容编辑器 #}
+          <div class="mb-3">
+            <label class="form-label fw-bold">内容</label>
 
-                        {# wangeditor 容器 #}
-                        <div id="editor-wrapper">
-                            <div id="toolbar-container"></div>
-                            <div id="editor-container" style="height: 400px;"></div>
-                        </div>
-                    </div>
+            {# ModelForm 生成的 textarea，默认 id 为 id_content #}
+            {{ form.content }}
 
-                    {# 提交按钮 #}
-                    <div class="text-end mt-4">
-                        <button type="submit" class="btn btn-primary">提交</button>
-                    </div>
-                </form>
+            {# wangeditor 容器 #}
+            <div id="editor-wrapper">
+              <div id="toolbar-container"></div>
+              <div id="editor-container" style="height: 400px;"></div>
             </div>
-        </div>
+          </div>
+
+          {# 提交按钮 #}
+          <div class="text-end mt-4">
+            <button type="submit" class="btn btn-primary">提交</button>
+          </div>
+        </form>
+      </div>
     </div>
-{% endblock content%}
+  </div>
+{% endblock content %}
 
 {% block script %}
-	<script>
+  <script>
     const { createEditor, createToolbar } = window.wangEditor
 
     const editorConfig = {
-        placeholder: '请输入内容...',
-        onChange(editor) {
-            const html = editor.getHtml()
-            console.log('editor content', html)
-            // 将编辑器内容同步到 ModelForm 的 content 字段
-            // ModelForm 默认生成的 textarea id 为 id_content
-            document.getElementById('id_content').value = html
-        }
+      placeholder: '请输入内容...',
+      onChange (editor) {
+        const html = editor.getHtml()
+        console.log('editor content', html)
+        // 将编辑器内容同步到 ModelForm 的 content 字段
+        // ModelForm 默认生成的 textarea id 为 id_content
+        document.getElementById('id_content').value = html
+      }
     }
 
     const editor = createEditor({
-        selector: '#editor-container',
-        html: '<p><br></p>',
-        config: editorConfig,
-        mode: 'default',
+      selector: '#editor-container',
+      // 注意：用 escapejs 过滤器转义内容，防止 JS 语法报错
+      html: '{{ blog.content|default:"<p><br></p>"|escapejs }}',
+      config: editorConfig,
+      mode: 'default',
     })
 
     const toolbarConfig = {}
 
     const toolbar = createToolbar({
-        editor,
-        selector: '#toolbar-container',
-        config: toolbarConfig,
-        mode: 'default',
+      editor,
+      selector: '#toolbar-container',
+      config: toolbarConfig,
+      mode: 'default',
     })
-</script>
-{% endblock script%}
+  </script>
+{% endblock script %}
