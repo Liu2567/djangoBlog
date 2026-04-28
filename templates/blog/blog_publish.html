@@ -25,9 +25,9 @@
     <div class="card shadow-sm">
       <div class="card-body p-4">
         {#   判断 blog 是否存在，存在则表示是编辑博客   #}
-        <h2 class="mb-4">{% if is_editing %}编辑博客{% else %}发布博客{% endif %}</h2>
+        <h2 class="mb-4">{% if blog %}编辑博客{% else %}发布博客{% endif %}</h2>
 
-        <form action="{% if is_editing %}{% url 'blog:blog_edit' blog_id=blog.id %}{% else %}{% url 'blog:my_publish' %}{% endif %}" method="POST" id="blog-form">
+        <form action="{% if blog %}{% url 'blog:blog_edit' blog_id=blog.id %}{% else %}{% url 'blog:my_publish' %}{% endif %}" method="POST" id="blog-form">
           {% csrf_token %}
 
           {# 标题输入 (使用 ModelForm 渲染) #}

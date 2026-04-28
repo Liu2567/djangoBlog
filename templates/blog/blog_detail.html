@@ -18,7 +18,10 @@
       {% if user.is_authenticated and blog.author == user %}
       <div>
         <a href="{% url 'blog:blog_edit' blog_id=blog.id %}" class="btn btn-sm btn-outline-primary me-1">编辑</a>
-        <a href="#" class="btn btn-sm btn-outline-danger">删除</a>
+        <form action="{% url 'blog:blog_delete' blog_id=blog.id %}" method="POST" style="display: inline;" onsubmit="return confirm('确定要删除这篇博客吗？此操作不可恢复！');">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
+        </form>
       </div>
       {% endif %}
     </div>

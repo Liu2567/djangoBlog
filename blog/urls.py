@@ -11,4 +11,5 @@ urlpatterns = [
     path('search', views.search, name='search'),
     path('my_publish', views.my_publish, name='my_publish'),
     path('blog/<int:blog_id>/edit', views.blog_edit, name='blog_edit'),
+    path('blog/<int:blog_id>/delete', views.blog_delete, name='blog_delete'),
 ]
