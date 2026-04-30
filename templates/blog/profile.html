@@ -78,16 +78,19 @@
             <hr>
 
             {# 操作按钮 #}
-            <div class="d-flex justify-content-end align-items-center mt-4">
+            <div class="d-flex justify-content-between align-items-center mt-4">
               <div>
                 <a href="#" class="btn btn-primary">
                   <i class="bi bi-key me-1"></i>修改密码
                 </a>
-                <form action="{% url 'blogAuth:logout' %}" method="POST" style="display: inline;">
+              </div>
+              <div>
+                <form action="{% url 'blogAuth:delete_account' %}" method="POST">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-danger"
-                          onclick="return confirm('数据会全部丢失,确定要注销账户吗？')">
-                    <i class="bi bi-box-arrow-right me-1"></i>注销
+                  <button type="submit"
+                          class="btn btn-outline-danger"
+                          onclick="return confirm('⚠️ 警告：您确定要注销账户吗？此操作将永久删除您的所有数据且无法恢复！')">
+                    <i class="bi bi-trash-fill me-1"></i>注销账户
                   </button>
                 </form>
               </div>
@@ -96,5 +99,5 @@
         </div>
       </div>
     </div>
-  </div>
+</div>
 {% endblock content %}

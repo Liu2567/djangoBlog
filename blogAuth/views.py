@@ -2,8 +2,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
+from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, LoginForm
+from blog.models import Blog, BlogComment
 
 
 # Create your views here.
@@ -50,7 +52,24 @@ def register(request):
         return render(request, 'auth/register.html', {'form': form})
 
 
+@require_POST
+@login_required(login_url='blogAuth:login')
 def logout(request):
     """退出登录"""
     auth_logout(request)
+    return redirect('blog:index')
+
+
+@require_POST
+@login_required(login_url='blogAuth:login')
+def delete_account(request):
+    """删除账户，注销"""
+    user = request.user
+    # 先删除用户的所有评论
+    BlogComment.objects.filter(author=user).delete()
+    # 然后删除用户的所有博客，同时也会删除博客下的评论
+    Blog.objects.filter(author=user).delete()
+    # 最后删除用户
+    user.delete()
+
     return redirect('blog:index')
