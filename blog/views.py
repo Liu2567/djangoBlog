@@ -101,14 +101,14 @@ def blog_edit(request, blog_id):
     # 验证是否是作者本人
     if blog.author != request.user:
         return redirect('blog:blog_detail', blog_id=blog_id)
-    
+
     if request.method == 'GET':
         form = PubBlogForm(instance=blog)
         return render(request, 'blog/blog_publish.html', {'form': form, 'blog': blog})
     else:
         form = PubBlogForm(request.POST, instance=blog)
         if form.is_valid():
-            form.save()      # 保存
+            form.save()  # 保存
             return redirect('blog:blog_detail', blog_id=blog_id)
         else:
             return render(request, 'blog/blog_publish.html', {'form': form, 'blog': blog})
@@ -120,11 +120,24 @@ def blog_edit(request, blog_id):
 def blog_delete(request, blog_id):
     try:
         blog = Blog.objects.get(id=blog_id)
-    except Blog.DoesNotExist:   # 没有找到该博客
+    except Blog.DoesNotExist:  # 没有找到该博客
         return redirect('blog:index')
-    
+
     if blog.author != request.user:
         return redirect('blog:blog_detail', blog_id=blog_id)
-    
+
     blog.delete()
     return redirect('blog:my_publish')
+
+
+@login_required(login_url='blogAuth:login')
+def profile(request):
+    user = request.user
+    blog_count = Blog.objects.filter(author=user).count()
+
+    context = {
+        'user': user,
+        'blog_count': blog_count,
+    }
+
+    return render(request, 'blog/profile.html', context=context)
