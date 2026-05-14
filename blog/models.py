@@ -15,6 +15,9 @@ class Blog(models.Model):
         verbose_name_plural = verbose_name
         ordering = ['-pub_at']
 
+    def __str__(self):
+        return self.title
+
 
 class BlogComment(models.Model):
     content = models.TextField(verbose_name='内容')

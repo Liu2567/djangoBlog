@@ -4,14 +4,27 @@ from django.views.decorators.http import require_http_methods, require_POST, req
 from blog.forms import PubBlogForm
 from blog.models import Blog, BlogComment
 from django.db.models import Q
+from django.core.paginator import Paginator
 
 
 # Create your views here.
 # 首页
 def index(request):
-    blogs = Blog.objects.all()
+    # 使用 select_related 优化，避免 N+1 查询问题
+    blogs = Blog.objects.select_related('author').all()
+    
+    # 创建分页器，每页显示 6 篇博客
+    paginator = Paginator(blogs, 6)
+    
+    # 获取当前页码（从 URL 参数中获取）
+    page_number = request.GET.get('page')
+    
+    # 获取当前页的对象
+    page_obj = paginator.get_page(page_number)
+    
     return render(request, 'blog/index.html', {
-        'blogs': blogs,
+        'page_obj': page_obj,
+        'blogs': page_obj,  # 保持兼容性，模板中可以用 page_obj 或 blogs
         'keyword': '',
         'search_mode': False
     })
@@ -19,8 +32,15 @@ def index(request):
 
 # 详情页
 def blog_detail(request, blog_id):
-    blog = Blog.objects.get(id=blog_id)
-    comments = BlogComment.objects.filter(blog=blog)
+    try:
+        # 预加载博客作者
+        blog = Blog.objects.select_related('author').get(id=blog_id)
+    except Blog.DoesNotExist:
+        return redirect('blog:index')
+    
+    # 预加载评论及其作者
+    comments = BlogComment.objects.select_related('author').filter(blog=blog)
+    
     return render(request, 'blog/blog_detail.html', {'blog': blog, 'comments': comments})
 
 
@@ -53,8 +73,18 @@ def blog_publish(request):
 @login_required(login_url='blogAuth:login')
 def blog_comment(request):
     blog_id = request.POST.get('blog_id')
-    content = request.POST.get('content')
-    BlogComment.objects.create(content=content, blog_id=blog_id, author=request.user)
+    content = request.POST.get('content', '').strip()
+    
+    # 验证内容不为空
+    if not content:
+        return redirect('blog:blog_detail', blog_id=blog_id)
+    
+    try:
+        blog = Blog.objects.get(id=blog_id)
+    except Blog.DoesNotExist:
+        return redirect('blog:index')
+
+    BlogComment.objects.create(content=content, blog=blog, author=request.user)
 
     # 发布后重新加载详情页
     return redirect('blog:blog_detail', blog_id=blog_id)
@@ -69,18 +99,33 @@ def search(request):
 
     # 如果关键词为空（包括只输入空格的情况），直接返回全部博客
     if not keyword:
-        blogs = Blog.objects.all()
+        blogs = Blog.objects.select_related('author').all()
+        
+        # 添加分页
+        paginator = Paginator(blogs, 6)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
         return render(request, 'blog/index.html', {
-            'blogs': blogs,
+            'page_obj': page_obj,
+            'blogs': page_obj,
             'keyword': '',
             'search_mode': False
         })
 
-    # 如果有有效关键词 搜索
-    blogs = Blog.objects.filter(Q(title__icontains=keyword) | Q(content__icontains=keyword))
+    # 如果有有效关键词 搜索，同时预加载作者
+    blogs = Blog.objects.select_related('author').filter(
+        Q(title__icontains=keyword) | Q(content__icontains=keyword)
+    )
+    
+    # 添加分页
+    paginator = Paginator(blogs, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     return render(request, 'blog/index.html', {
-        'blogs': blogs,
+        'page_obj': page_obj,
+        'blogs': page_obj,
         'keyword': keyword,
         'search_mode': True
     })
@@ -89,8 +134,18 @@ def search(request):
 # 我的发布
 @login_required(login_url='blogAuth:login')
 def my_publish(request):
-    blogs = Blog.objects.filter(author=request.user).all()
-    return render(request, 'blog/my_publish.html', {'blogs': blogs})
+    # 使用 select_related 优化查询
+    blogs = Blog.objects.select_related('author').filter(author=request.user)
+    
+    # 添加分页
+    paginator = Paginator(blogs, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'blog/my_publish.html', {
+        'page_obj': page_obj,
+        'blogs': page_obj
+    })
 
 
 # 编辑博客
