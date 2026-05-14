@@ -7,25 +7,15 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 
 
-# Create your views here.
 # 首页
 def index(request):
-    # 使用 select_related 优化，避免 N+1 查询问题
     blogs = Blog.objects.select_related('author').all()
-    
-    # 创建分页器，每页显示 6 篇博客
     paginator = Paginator(blogs, 6)
-    
-    # 获取当前页码（从 URL 参数中获取）
     page_number = request.GET.get('page')
-    
-    # 获取当前页的对象
     page_obj = paginator.get_page(page_number)
-    
+
     return render(request, 'blog/index.html', {
         'page_obj': page_obj,
-        'blogs': page_obj,  # 保持兼容性，模板中可以用 page_obj 或 blogs
-        'keyword': '',
         'search_mode': False
     })
 
