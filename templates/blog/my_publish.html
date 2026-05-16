@@ -12,7 +12,7 @@
             <div class="col">
                 <div class="card">
                     <div class="card-header">
-                        <a href="{% url 'blog:blog_detail' blog_id=blog.id %}"
+                        <a href="{% url 'blog:blog_detail' slug=blog.slug %}"
                            style="--bs-link-opacity: .5;">{{ blog.title }}</a>
                     </div>
                     <div class="card-body" style="height: 100px;">
@@ -29,8 +29,8 @@
                         </div>
                         {# 操作按钮：编辑和删除 #}
                         <div>
-                            <a href="{% url 'blog:blog_edit' blog_id=blog.id %}" class="btn btn-sm btn-outline-primary me-1">编辑</a>
-                            <form action="{% url 'blog:blog_delete' blog_id=blog.id %}" method="POST" style="display: inline;" onsubmit="return confirm('确定要删除这篇博客吗？');">
+                            <a href="{% url 'blog:blog_edit' slug=blog.slug %}" class="btn btn-sm btn-outline-primary me-1">编辑</a>
+                            <form action="{% url 'blog:blog_delete' slug=blog.slug %}" method="POST" style="display: inline;" onsubmit="return confirm('确定要删除这篇博客吗？');">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
                             </form>
