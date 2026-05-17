@@ -36,25 +36,18 @@ def blog_detail(request, slug):
 # 发布页面（需要登录）
 @require_http_methods(['GET', 'POST'])
 @login_required(login_url='blogAuth:login')
-# 还有一种方法，@login_required，然后在settings.py中配置LOGIN_URL = '/auth/login'
-# 如果页面需要登录后才能访问，也可以在前端中直接隐藏或禁用
 def blog_publish(request):
-    if request.method == 'GET':
-        form = PubBlogForm()
-        return render(request, 'blog/blog_publish.html', {'form': form})
-    else:
+    if request.method == 'POST':
         form = PubBlogForm(request.POST)
         if form.is_valid():
-            title = form.cleaned_data.get('title')
-            content = form.cleaned_data.get('content')
-
-            # 1. 获取 create 返回的新对象
-            blog = Blog.objects.create(title=title, content=content, author=request.user)
-
-            # 2. 使用对象的 id 属性进行跳转
+            blog = form.save(commit=False)
+            blog.author = request.user
+            blog.save()
             return redirect('blog:blog_detail', slug=blog.slug)
-        else:
-            return render(request, 'blog/blog_publish.html', {'form': form})
+    else:
+        form = PubBlogForm()
+
+    return render(request, 'blog/blog_publish.html', {'form': form})
 
 
 # 评论
@@ -63,11 +56,14 @@ def blog_publish(request):
 def blog_comment(request):
     blog_id = request.POST.get('blog_id')
     content = request.POST.get('content', '').strip()
-    
-    # 验证内容不为空
+
     if not content:
-        return redirect('blog:blog_detail', blog_id=blog_id)
-    
+        try:
+            blog = Blog.objects.get(id=blog_id)
+            return redirect('blog:blog_detail', slug=blog.slug)
+        except Blog.DoesNotExist:
+            return redirect('blog:index')
+
     try:
         blog = Blog.objects.get(id=blog_id)
     except Blog.DoesNotExist:
@@ -75,88 +71,66 @@ def blog_comment(request):
 
     BlogComment.objects.create(content=content, blog=blog, author=request.user)
 
-    # 发布后重新加载详情页
-    return redirect('blog:blog_detail', blog_id=blog_id)
+    return redirect('blog:blog_detail', slug=blog.slug)
 
 
 # 搜索
 @require_GET
 def search(request):
-    # /search?keyword=xxxx
-    # 获取关键词并去除首尾空格
     keyword = request.GET.get('keyword', '').strip()
 
-    # 如果关键词为空（包括只输入空格的情况），直接返回全部博客
-    if not keyword:
+    if keyword:
+        blogs = Blog.objects.select_related('author').filter(
+            Q(title__icontains=keyword) | Q(content__icontains=keyword)
+        )
+        search_mode = True
+    else:
         blogs = Blog.objects.select_related('author').all()
-        
-        # 添加分页
-        paginator = Paginator(blogs, 6)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        
-        return render(request, 'blog/index.html', {
-            'page_obj': page_obj,
-            'blogs': page_obj,
-            'keyword': '',
-            'search_mode': False
-        })
+        search_mode = False
 
-    # 如果有有效关键词 搜索，同时预加载作者
-    blogs = Blog.objects.select_related('author').filter(
-        Q(title__icontains=keyword) | Q(content__icontains=keyword)
-    )
-    
-    # 添加分页
     paginator = Paginator(blogs, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     return render(request, 'blog/index.html', {
         'page_obj': page_obj,
-        'blogs': page_obj,
         'keyword': keyword,
-        'search_mode': True
+        'search_mode': search_mode
     })
 
 
-# 我的发布
+# 我的发布（需要登录）
 @login_required(login_url='blogAuth:login')
 def my_publish(request):
-    # 使用 select_related 优化查询
     blogs = Blog.objects.select_related('author').filter(author=request.user)
-    
-    # 添加分页
     paginator = Paginator(blogs, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    return render(request, 'blog/my_publish.html', {
-        'page_obj': page_obj,
-        'blogs': page_obj
-    })
+    return render(request, 'blog/my_publish.html', {'page_obj': page_obj})
 
 
 # 编辑博客
 @require_http_methods(['GET', 'POST'])
 @login_required(login_url='blogAuth:login')
 def blog_edit(request, slug):
-    blog = Blog.objects.get(slug=slug)
-    # 验证是否是作者本人
+    try:
+        blog = Blog.objects.select_related('author').get(slug=slug)
+    except Blog.DoesNotExist:
+        return redirect('blog:index')
+
     if blog.author != request.user:
         return redirect('blog:blog_detail', slug=blog.slug)
 
-    if request.method == 'GET':
-        form = PubBlogForm(instance=blog)
-        return render(request, 'blog/blog_publish.html', {'form': form, 'blog': blog})
-    else:
+    if request.method == 'POST':
         form = PubBlogForm(request.POST, instance=blog)
         if form.is_valid():
             form.save()
-            # 保存后跳转到最新的 slug
             return redirect('blog:blog_detail', slug=blog.slug)
-        else:
-            return render(request, 'blog/blog_publish.html', {'form': form, 'blog': blog})
+    else:
+        form = PubBlogForm(instance=blog)
+
+    return render(request, 'blog/blog_publish.html', {'form': form, 'blog': blog})
 
 
 # 删除博客
@@ -164,7 +138,7 @@ def blog_edit(request, slug):
 @login_required(login_url='blogAuth:login')
 def blog_delete(request, slug):
     try:
-        blog = Blog.objects.get(slug=slug)
+        blog = Blog.objects.select_related('author').get(slug=slug)
     except Blog.DoesNotExist:
         return redirect('blog:index')
 
@@ -172,6 +146,7 @@ def blog_delete(request, slug):
         return redirect('blog:blog_detail', slug=blog.slug)
 
     blog.delete()
+
     return redirect('blog:my_publish')
 
 
