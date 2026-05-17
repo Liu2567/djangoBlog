@@ -42,7 +42,7 @@ class Blog(models.Model):
 
 
 class BlogComment(models.Model):
-    content = models.TextField(verbose_name='内容')
+    content = models.CharField(verbose_name='内容', max_length=500)
     pub_at = models.DateTimeField(auto_now_add=True, verbose_name='发布时间')
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE, verbose_name='所属博客')
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='作者')

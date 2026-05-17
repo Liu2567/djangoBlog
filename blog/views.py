@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods, require_POST, require_GET
-from blog.forms import PubBlogForm
+from blog.forms import PubBlogForm, CommentForm
 from blog.models import Blog, BlogComment
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -29,8 +29,10 @@ def blog_detail(request, slug):
 
     comments = BlogComment.objects.select_related('author').filter(blog=blog)
 
+    form = CommentForm()
+
     return render(request, 'blog/blog_detail.html',
-                  {'blog': blog, 'comments': comments})
+                  {'blog': blog, 'comments': comments, 'form': form})
 
 
 # 发布页面（需要登录）
@@ -55,23 +57,38 @@ def blog_publish(request):
 @login_required(login_url='blogAuth:login')
 def blog_comment(request):
     blog_id = request.POST.get('blog_id')
-    content = request.POST.get('content', '').strip()
-
-    if not content:
-        try:
-            blog = Blog.objects.get(id=blog_id)
-            return redirect('blog:blog_detail', slug=blog.slug)
-        except Blog.DoesNotExist:
-            return redirect('blog:index')
 
     try:
         blog = Blog.objects.get(id=blog_id)
     except Blog.DoesNotExist:
         return redirect('blog:index')
 
-    BlogComment.objects.create(content=content, blog=blog, author=request.user)
+    form = CommentForm(request.POST)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.author = request.user
+        comment.blog = blog
+        comment.save()
+        return redirect('blog:blog_detail', slug=blog.slug)
+    else:
+        return redirect('blog:blog_detail', slug=blog.slug)
 
-    return redirect('blog:blog_detail', slug=blog.slug)
+
+# 删除评论
+@require_POST
+@login_required(login_url='blogAuth:login')
+def blog_comment_delete(request, comment_id):
+    try:
+        comment = BlogComment.objects.select_related('author', 'blog').get(id=comment_id)
+    except BlogComment.DoesNotExist:
+        return redirect('blog:index')
+
+    if comment.author != request.user:
+        return redirect('blog:blog_detail', slug=comment.blog.slug)
+
+    comment.delete()
+
+    return redirect('blog:blog_detail', slug=comment.blog.slug)
 
 
 # 搜索
