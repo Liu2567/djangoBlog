@@ -47,18 +47,7 @@
 
       {# 右侧区域（搜索框 + 用户） #}
       <div class="d-flex align-items-center">
-        {# 1. 给表单添加 id="search-form" #}
-        <form class="d-flex me-3 mb-2 mb-lg-0" role="search" action="{% url 'blog:search' %}" method="GET"
-              id="search-form">
-          {# 2. 给输入框添加 id="search-input" #}
-          <input class="form-control" type="search" placeholder="搜索博客..." aria-label="Search"
-                 name="keyword" id="search-input"
-                 value="{{ keyword|default:'' }}"
-                 style="width: 200px; border-top-right-radius: 0; border-bottom-right-radius: 0;"/>
-          <button class="btn btn-outline-primary" type="submit"
-                  style="border-top-left-radius: 0; border-bottom-left-radius: 0;">搜索
-          </button>
-        </form>
+        {% block search %}{% endblock %}}
 
         {# 用户区域 #}
         {% if user.is_authenticated %}
@@ -101,20 +90,5 @@
 
 {% block script %}{% endblock %}
 
-<script>    document.getElementById('search-form').addEventListener('submit', function (e) {
-  e.preventDefault() // 阻止表单默认提交
-
-  const input = document.getElementById('search-input')
-  const keyword = input.value.trim() // 自动去除首尾空格
-
-  if (!keyword) {
-    // 如果为空，直接回首页
-    window.location.href = "{% url 'blog:index' %}"
-  } else {
-    // 如果有关键词，手动跳转，这样 URL 中就不会有 + 号
-    window.location.href = "{% url 'blog:search' %}?keyword=" + encodeURIComponent(keyword)
-  }
-})
-</script>
 </body>
 </html>

@@ -27,7 +27,9 @@
         {#   判断 blog 是否存在，存在则表示是编辑博客   #}
         <h2 class="mb-4">{% if blog %}编辑博客{% else %}发布博客{% endif %}</h2>
 
-        <form action="{% if blog %}{% url 'blog:blog_edit' slug=blog.slug %}{% else %}{% url 'blog:blog_publish' %}{% endif %}" method="POST" id="blog-form">
+        <form action="
+            {% if blog %}{% url 'blog:blog_edit' slug=blog.slug %}{% else %}{% url 'blog:blog_publish' %}{% endif %}"
+              method="POST" id="blog-form">
           {% csrf_token %}
 
           {# 标题输入 (使用 ModelForm 渲染) #}
@@ -50,10 +52,17 @@
               <div id="editor-container" style="height: 400px;"></div>
             </div>
           </div>
-
-          {# 提交按钮 #}
+          {% if blog %}
+            <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'blog:blog_detail' slug=blog.slug %}" class="btn btn-outline-info">返回详情</a>
+            <button type="submit" class="btn btn-primary">
+              更新博客
+            </button>
+          {% else %}
           <div class="text-end mt-4">
-            <button type="submit" class="btn btn-primary">提交</button>
+            <button type="submit" class="btn btn-primary">发布博客</button>
+          </div>
+          {% endif %}
           </div>
         </form>
       </div>

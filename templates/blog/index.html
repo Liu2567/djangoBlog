@@ -2,6 +2,21 @@
 
 {% block title %}博客首页{% endblock title %}
 
+{% block search %}
+  {# 1. 给表单添加 id="search-form" #}
+  <form class="d-flex me-3 mb-2 mb-lg-0" role="search" action="{% url 'blog:search' %}" method="GET"
+        id="search-form">
+    {# 2. 给输入框添加 id="search-input" #}
+    <input class="form-control" type="search" placeholder="搜索博客..." aria-label="Search"
+           name="keyword" id="search-input"
+           value="{{ keyword|default:'' }}"
+           style="width: 200px; border-top-right-radius: 0; border-bottom-right-radius: 0;"/>
+    <button class="btn btn-outline-primary" type="submit"
+            style="border-top-left-radius: 0; border-bottom-left-radius: 0;">搜索
+    </button>
+  </form>
+{% endblock %}
+
 {% block content %}
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">博客列表</h2>
@@ -55,7 +70,9 @@
             </a>
           </li>
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_mode %}&keyword={{ keyword }}{% endif %}" aria-label="Previous">
+            <a class="page-link"
+               href="?page={{ page_obj.previous_page_number }}{% if search_mode %}&keyword={{ keyword }}{% endif %}"
+               aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
           </li>
@@ -76,7 +93,8 @@
             </li>
           {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
             <li class="page-item">
-              <a class="page-link" href="?page={{ num }}{% if search_mode %}&keyword={{ keyword }}{% endif %}">{{ num }}</a>
+              <a class="page-link"
+                 href="?page={{ num }}{% if search_mode %}&keyword={{ keyword }}{% endif %}">{{ num }}</a>
             </li>
           {% endif %}
         {% endfor %}
@@ -84,12 +102,16 @@
         {# 下一页 #}
         {% if page_obj.has_next %}
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_mode %}&keyword={{ keyword }}{% endif %}" aria-label="Next">
+            <a class="page-link"
+               href="?page={{ page_obj.next_page_number }}{% if search_mode %}&keyword={{ keyword }}{% endif %}"
+               aria-label="Next">
               <span aria-hidden="true">&raquo;</span>
             </a>
           </li>
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_mode %}&keyword={{ keyword }}{% endif %}" aria-label="Last">
+            <a class="page-link"
+               href="?page={{ page_obj.paginator.num_pages }}{% if search_mode %}&keyword={{ keyword }}{% endif %}"
+               aria-label="Last">
               <span aria-hidden="true">&raquo;&raquo;</span>
             </a>
           </li>

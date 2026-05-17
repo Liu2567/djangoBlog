@@ -28,7 +28,7 @@ def blog_detail(request, slug):
         return redirect('blog:index')
 
     comments = BlogComment.objects.select_related('author').filter(blog=blog)
-    
+
     return render(request, 'blog/blog_detail.html',
                   {'blog': blog, 'comments': comments})
 
@@ -78,21 +78,28 @@ def blog_comment(request):
 @require_GET
 def search(request):
     keyword = request.GET.get('keyword', '').strip()
+    scope = request.GET.get('scope', 'all')
 
-    if keyword:
-        blogs = Blog.objects.select_related('author').filter(
-            Q(title__icontains=keyword) | Q(content__icontains=keyword)
-        )
-        search_mode = True
+    if scope == 'my':
+        if not request.user.is_authenticated:
+            return redirect('blogAuth:login')
+        blogs = Blog.objects.select_related('author').filter(author=request.user)
+        template_name = 'blog/my_publish.html'
     else:
         blogs = Blog.objects.select_related('author').all()
+        template_name = 'blog/index.html'
+
+    if keyword:
+        blogs = blogs.filter(Q(title__icontains=keyword) | Q(content__icontains=keyword))
+        search_mode = True
+    else:
         search_mode = False
 
     paginator = Paginator(blogs, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    return render(request, 'blog/index.html', {
+    return render(request, template_name, {
         'page_obj': page_obj,
         'keyword': keyword,
         'search_mode': search_mode
@@ -106,7 +113,7 @@ def my_publish(request):
     paginator = Paginator(blogs, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     return render(request, 'blog/my_publish.html', {'page_obj': page_obj})
 
 
