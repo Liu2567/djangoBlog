@@ -156,3 +156,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://djangoblog-production-bd26.up.railway.app',
     'http://djangoblog-production-bd26.up.railway.app',
 ]
+
+# 强制 Django 从请求头或 Cookie 中读取 CSRF Token
+CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
+CSRF_COOKIE_HTTPONLY = False  # 允许 JavaScript 读取 Cookie
